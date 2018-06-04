@@ -24,7 +24,7 @@ class SuperBlock {
     }
 }
 
-class Disk {
+public class Disk {
     HashMap<Integer, Integer> fileMap;  //index, size
     int[][] blocks;
 

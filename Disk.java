@@ -41,6 +41,15 @@ public class Disk {
     int getBlockSize() {
         return getNumBlocks() > 0 ? blocks[0].length : 0;
     }
+    
+    //2. format disk
+    void  formatDist(){
+        fileMap.clear();
+    }
+    //3. unmount disk
+    void unmountDisk(SuperBlock sb){
+        sb.diskVector.remove(this);
+    }
 
     //4. Empty space
     int getFreespace() {
@@ -55,7 +64,10 @@ public class Disk {
 
     public static void main(String[] args) {
         SuperBlock sb = new SuperBlock();
-        Disk disk = new Disk(3, 4);
-        sb.diskVector.add(disk);
+        Disk disk1 = new Disk(3, 4);
+        Disk disk2 = new Disk(12,24);
+        sb.diskVector.add(disk1);
+        sb.diskVector.add(disk2);
+       
     }
 }

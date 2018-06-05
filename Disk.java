@@ -3,6 +3,7 @@ package TermProject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.Scanner;
 
 /*
 1. 문현균
@@ -32,6 +33,7 @@ public class Disk {
     Disk(int numBlocks, int blockSize) {
         fileMap = new HashMap<>();
         blocks = new int[numBlocks][blockSize];
+        
     }
 
     int getNumBlocks() {
@@ -41,6 +43,10 @@ public class Disk {
     int getBlockSize() {
         return getNumBlocks() > 0 ? blocks[0].length : 0;
     }
+   int[][] getBlock()
+   {
+	   return blocks;
+   }
 
     //4. Empty space
     int getFreespace() {
@@ -51,6 +57,38 @@ public class Disk {
         }
 
         return total;
+    }
+    //5. Read space
+    //col = getnumBlock
+    boolean readDisk(Disk disk)
+    {
+    	Scanner scan = new Scanner(System.in);
+    	System.out.println("Enter the index and size :");
+    	int index; // 시작점
+    	int size; // 크기
+    	index = scan.nextInt();
+    	size = scan.nextInt();
+    	
+    	int row = disk.getNumBlocks();
+    	int col = disk.getBlockSize();
+    	
+    	int[][] tempBlock = disk.getBlock();
+
+    	if((index + size) -1 > (row*col) -1 ) // 사이즈 확인
+    	{
+    		System.out.println("Wrong values...");
+    		scan.close();
+    		return false;
+    	}
+    	else
+    	{    		
+    		for(int i =0; i < size; i++)
+    		{
+    			System.out.print(tempBlock[(i+index)/col][(i+index)%col]);
+    		}
+    		scan.close();
+    		return true;
+    	}
     }
 
     public static void main(String[] args) {

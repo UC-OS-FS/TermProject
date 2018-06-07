@@ -1,5 +1,6 @@
 package TermProject;
 
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.Scanner;
-
 /*
 1. 문현균
 2. 박민근
@@ -60,6 +60,7 @@ public class Disk {
 
         return total;
     }
+
 
     int findStartPoint(int inputSize){
         Set keys = fileMap.keySet();
@@ -156,13 +157,9 @@ public class Disk {
 
                 blocks[row][col] = Integer.parseInt(elem[bufferIdx]);
             }
-            fileMap
+            int newSize = fileMap.get(fileStartPoint) + elem.length;
+            fileMap.put(fileStartPoint, newSize);
         }
-
-
-
-
-
 
     }
 

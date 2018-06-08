@@ -1,6 +1,5 @@
 package TermProject;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.Scanner;
+
 /*
 1. 문현균
 2. 박민근
@@ -61,7 +61,6 @@ public class Disk {
         return total;
     }
 
-
     int findStartPoint(int inputSize){
         Set keys = fileMap.keySet();
         List list = new ArrayList(keys);
@@ -72,25 +71,40 @@ public class Disk {
         int end = blockSize * numBlocks;
 
 
-        for (int i = 0; i < list.toArray().length; i ++){
-            if (i == 0){
-                if (inputSize < (int)list.toArray()[i] - beginning)
+        if (list.toArray().length == 0){
+            if(inputSize <= numBlocks * blockSize)
+                return 0;
+            else
+                System.out.println("Too big file size");
+            return -1;
+        }
+
+        int output = -1;
+        int idx = 0;
+
+        do {
+            if (idx == 0){
+                if (inputSize < (int)list.toArray()[idx] - beginning)
                     //return beginning;
-                    return beginning;
+
+                    output = beginning;
             }
 
-            else if (i == list.toArray().length -1){
-                if(inputSize < end - ((int)list.toArray()[i] + fileMap.get(list.toArray()[i])))
-                    return ((int)list.toArray()[i] + fileMap.get(list.toArray()[i]));
+            else if (idx == list.toArray().length -1){
+                if(inputSize < end - ((int)list.toArray()[idx] + fileMap.get(list.toArray()[idx])))
+                    output = ((int)list.toArray()[idx] + fileMap.get(list.toArray()[idx]));
 
             }
 
             else {
-                if( inputSize <  (int)list.toArray()[i] - ((int)list.toArray()[i-1] + fileMap.get(list.toArray()[i-1])))
-                    return ((int)list.toArray()[i-1] + fileMap.get(list.toArray()[i-1]));
+                if( inputSize <  (int)list.toArray()[idx] - ((int)list.toArray()[idx-1] + fileMap.get(list.toArray()[idx-1])))
+                    output = ((int)list.toArray()[idx-1] + fileMap.get(list.toArray()[idx-1]));
             }
-        }
-        return -1;
+            idx++;
+        }while(idx < list.toArray().length);
+
+
+        return output;
     }
 
     void create(){
@@ -164,8 +178,14 @@ public class Disk {
     }
 
     public static void main(String[] args) {
-        SuperBlock sb = new SuperBlock();
-        Disk disk = new Disk(3, 4);
-        sb.diskVector.add(disk);
+
+
+        Disk aa = new Disk(100, 100);
+        aa.create();
+        System.out.println(aa.getFreespace());
+
+        aa.write(0);
+        System.out.println(aa.getFreespace());
     }
+
 }

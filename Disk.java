@@ -1,21 +1,14 @@
 package TermProject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
+import java.util.Scanner;
 
-/*
-1. 문현균
-2. 박민근
-3. 박민근
-4. 문현균
-5. 손진우
-6. 유승화
-7. 유승화R
-8. 손진우
-9. 이인홍
-10. 이인홍
- */
 
 class SuperBlock {
     Vector<Disk> diskVector;
@@ -51,6 +44,43 @@ public class Disk {
         }
 
         return total;
+    }
+    
+    void Delete(){
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the StartPoint:");
+        int StartPoint;
+        StartPoint = scan.nextInt();
+        fileMap.remove(StartPoint);
+        
+    }
+    
+    void Defragment(){
+        Set keys = fileMap.keySet();
+        List <Integer>list = new ArrayList(keys);
+        Collections.sort(list);
+        int len = list.size();
+        for(int i=0; i<len; i++){
+            if(i == 0){
+                if(list.get(i) != 0){
+                    int temp;
+                    temp = fileMap.get(list.get(i));
+                    fileMap.remove(list.get(i));
+                    fileMap.put(0, temp);
+                }           
+               
+            }
+            else {
+                if(list.get(i-1)+fileMap.get(list.get(i-1))+1 != list.get(i)) {
+                     int temp;
+                    temp = fileMap.get(list.get(i));
+                    fileMap.remove(list.get(i));
+                    fileMap.put(list.get(i-1)+fileMap.get(list.get(i-1))+1, temp);
+                }
+            }
+            
+        }
+            
     }
 
     public static void main(String[] args) {

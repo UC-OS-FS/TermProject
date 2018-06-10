@@ -3,7 +3,11 @@ package TermProject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+
 import java.util.Scanner;
+
+import java.lang.Thread;
+import java.lang.Runnable;
 
 /*
 1. 문현균
@@ -23,6 +27,38 @@ class SuperBlock {
     SuperBlock() {
         diskVector = new Vector<>();
     }
+}
+
+class MyThread extends Thread
+{
+	public void run(Disk disk) // Function - Parallel Reading
+	{
+		Scanner scan = new Scanner(System.in);
+    	System.out.println("Enter the index and size :");
+    	int index; // 시작점
+    	int size; // 크기
+    	index = scan.nextInt();
+    	size = scan.nextInt();
+    	
+    	int row = disk.getNumBlocks();
+    	int col = disk.getBlockSize();
+    	
+    	int[][] tempBlock = disk.getBlock();
+
+    	if((index + size) -1 > (row*col) -1 ) // 사이즈 확인
+    	{
+    		System.out.println("Wrong values...");
+    		scan.close();    	
+    	}
+    	else
+    	{    		
+    		for(int i =0; i < size; i++)
+    		{
+    			System.out.print(tempBlock[(i+index)/col][(i+index)%col]);
+    		}
+    		scan.close();
+    	}
+	}
 }
 
 public class Disk {
@@ -60,7 +96,7 @@ public class Disk {
     }
     //5. Read space
     //col = getnumBlock
-    boolean readDisk(Disk disk)
+    void readDisk(Disk disk)
     {
     	Scanner scan = new Scanner(System.in);
     	System.out.println("Enter the index and size :");
@@ -77,8 +113,7 @@ public class Disk {
     	if((index + size) -1 > (row*col) -1 ) // 사이즈 확인
     	{
     		System.out.println("Wrong values...");
-    		scan.close();
-    		return false;
+    		scan.close();    	
     	}
     	else
     	{    		
@@ -87,13 +122,19 @@ public class Disk {
     			System.out.print(tempBlock[(i+index)/col][(i+index)%col]);
     		}
     		scan.close();
-    		return true;
     	}
     }
+  
+    
 
     public static void main(String[] args) {
         SuperBlock sb = new SuperBlock();
         Disk disk = new Disk(3, 4);
         sb.diskVector.add(disk);
+        
+        MyThread t1 = new MyThread();
+        MyThread t2 = new MyThread();
+        t1.run(disk);
+        t2.run(disk);
     }
 }

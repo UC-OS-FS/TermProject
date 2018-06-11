@@ -77,6 +77,7 @@ public class Disk {
         while(1){
             System.out.println("FileSystem Management");
             switch(tmp){
+                case 1:
                 case 2:
                 case 3:
             }

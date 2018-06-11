@@ -120,7 +120,8 @@ public class Disk {
         int startPoint = findStartPoint(inputSize);
         if (startPoint == -1 ) {
             System.out.println("Cannot find start point, too big file or defragment is needed");
-            System.exit(1);
+            return;
+            //System.exit(1);
         }
 
         // from start point, write
@@ -135,6 +136,12 @@ public class Disk {
     }
 
     void write(int fileStartPoint){
+
+        if (!fileMap.containsKey(fileStartPoint)) {   //없으면
+            System.out.println("cannot find startPoint");
+            return;
+        }
+
         Scanner scan = new Scanner(System.in);
         String inputs;
         inputs = scan.nextLine();
@@ -178,8 +185,6 @@ public class Disk {
     }
 
     public static void main(String[] args) {
-
-
         Disk aa = new Disk(100, 100);
         aa.create();
         System.out.println(aa.getFreespace());

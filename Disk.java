@@ -94,10 +94,9 @@ public class Disk {
 
         return total;
     }
+
     //5. Read space
-    //col = getnumBlock
-    void readDisk(Disk disk)
-    {
+    void readDisk() {
     	Scanner scan = new Scanner(System.in);
     	System.out.println("Enter the index and size :");
     	int index; // 시작점
@@ -105,23 +104,23 @@ public class Disk {
     	index = scan.nextInt();
     	size = scan.nextInt();
     	
-    	int row = disk.getNumBlocks();
-    	int col = disk.getBlockSize();
-    	
-    	int[][] tempBlock = disk.getBlock();
+    	int row = getNumBlocks();
+    	int col = getBlockSize();
 
     	if((index + size) -1 > (row*col) -1 ) // 사이즈 확인
     	{
     		System.out.println("Wrong values...");
-    		scan.close();    	
+    		scan.close();
+    		return;
     	}
     	else
     	{    		
     		for(int i =0; i < size; i++)
     		{
-    			System.out.print(tempBlock[(i+index)/col][(i+index)%col]);
+    			System.out.print(blocks[(i+index)/col][(i+index)%col]);
     		}
     		scan.close();
+    		return;
     	}
     }
   

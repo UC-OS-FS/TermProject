@@ -1,4 +1,6 @@
-package TermProject;
+//package TermProject;
+
+import net.dv8tion.jda.core.EmbedBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,5 +73,13 @@ public class Disk {
 
         sb.unmountDisk(disk1);
         System.out.println(sb.diskVector.size());
+        int tmp  = 1;
+        while(1){
+            System.out.println("FileSystem Management");
+            switch(tmp){
+                case 2:
+                case 3:
+            }
+        }
     }
 }

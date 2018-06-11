@@ -27,6 +27,10 @@ class SuperBlock {
     SuperBlock() {
         diskVector = new Vector<>();
     }
+    //3. unmount disk
+    void unmountDisk(Disk disk){
+        diskVector.remove(disk);
+    }
 }
 
 public class Disk {
@@ -48,6 +52,11 @@ public class Disk {
 
     int getBlockSize() {
         return getNumBlocks() > 0 ? blocks[0].length : 0;
+    }
+
+    //2. format disk
+    void  formatDist(){
+        fileMap.clear();
     }
 
     //4. Empty space
@@ -185,12 +194,19 @@ public class Disk {
     }
 
     public static void main(String[] args) {
-        Disk aa = new Disk(100, 100);
-        aa.create();
-        System.out.println(aa.getFreespace());
+        SuperBlock sb = new SuperBlock();
+        Disk disk1 = new Disk(3, 4);
+        disk1.create();
+        System.out.println(disk1.getFreespace());
 
-        aa.write(0);
-        System.out.println(aa.getFreespace());
+        disk1.write(0);
+        System.out.println(disk1.getFreespace());
+        Disk disk2 = new Disk(12,24);
+        sb.diskVector.add(disk1);
+        sb.diskVector.add(disk2);
+
+        sb.unmountDisk(disk1);
+        System.out.println(sb.diskVector.size());
     }
 
 }

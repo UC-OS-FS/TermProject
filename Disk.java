@@ -29,6 +29,7 @@ class Console{
     private int size1,size2;
     private int count;
     private BufferedReader in =  new BufferedReader(new InputStreamReader(System.in));
+    private Disk disk;
 
     Console(SuperBlock sb){
         this.sb = sb;
@@ -79,33 +80,69 @@ class Console{
                     break;
 
                 case 2: //format disk
-                    chooseDisk().formatDisk();
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    disk.formatDisk();
                     System.out.println("Disk got formated successfully");
                     break;
                 case 3: //unmount disk
-                    sb.unmountDisk(chooseDisk());
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    sb.unmountDisk(disk);
                     System.out.println("Disk got unmounted successfully");
                     break;
                 case 4: //엠티스페이스
-                    System.out.println("Empty space in the disk: " + chooseDisk().getFreespace());
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    System.out.println("Empty space in the disk: " + disk.getFreespace());
                     break;
                 case 5: //리드
-                    chooseDisk();
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    getInodeId(chooseDisk());
                     break;
                 case 6: //라이트
-                    chooseDisk();
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    getInodeId(chooseDisk());
                     break;
                 case 7: //크리에이트
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
                     chooseDisk();
                     break;
                 case 8: //페러럴 리드
-                    chooseDisk();
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    getInodeId(chooseDisk());
                     break;
                 case 9: // 딜리트
-                    chooseDisk();
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    getInodeId(chooseDisk());
                     break;
                 case 10: //디프레그먼트
-                    chooseDisk();
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    getInodeId(chooseDisk());
                     break;
             }
         }
@@ -128,6 +165,25 @@ class Console{
             return null;
         }
         return sb.diskVector.elementAt(num);
+    }
+    private int getInodeId(Disk disk){
+        System.out.println("Choose a file");
+        for(int i = 0; i< disk.iNodeIDVector.size(); i++){
+            System.out.print(i+ ": " + disk.iNodeIDVector.elementAt(i) + " ");
+        }
+        System.out.println();
+        try{
+            System.out.print("Choose number: ");
+            num = Integer.parseInt(in.readLine());
+            if(num >= disk.iNodeIDVector.size() || num < 0){
+                System.out.println("Wrong number");
+                return -1;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+        return disk.iNodeIDVector.elementAt(num);
     }
 }
 
@@ -172,7 +228,6 @@ class SuperBlock {
         }
         return null;
     }
-    //3. unmount disk
     void unmountDisk(Disk disk){
         diskVector.remove(disk);
 
@@ -200,7 +255,6 @@ public class Disk {
     int getBlockSize() {
         return getNumBlocks() > 0 ? blocks[0].length : 0;
     }
-    // 2. format disk
     void formatDisk(){
 //        if(!vec.contains(inodeId)){
 //            System.out.println("There is no requested file");
@@ -229,3 +283,16 @@ public class Disk {
         c.start();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

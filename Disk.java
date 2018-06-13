@@ -87,7 +87,9 @@ public class Disk {
                 - iNodeIDVector.stream().map(i -> Global.getINODE(i).size).mapToInt(i -> i).sum();
     }
 
-    void Delete(SuperBlock SB) {
+    void Delete(Integer iNodeID) {
+        iNodeIDVector.remove(iNodeIDVector.indexOf(iNodeID));
+        /*
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the DISK and ID(diskid id):");
         int delID;
@@ -108,6 +110,7 @@ public class Disk {
         if(check == true) {
             System.out.println("Inode not found");
         }
+        */
     }
     
     void Degfragment(SuperBlock SB) {

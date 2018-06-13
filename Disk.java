@@ -150,7 +150,7 @@ class Console{
     private Disk chooseDisk(){
         System.out.println("Choose a disk");
         for(int i = 0; i< sb.diskVector.size(); i++){
-            System.out.print(i+ ": " + sb.diskVector.elementAt(i) + " ");
+            System.out.print(i+ ". " + sb.diskVector.elementAt(i).id + " ");
         }
         System.out.println();
         try{

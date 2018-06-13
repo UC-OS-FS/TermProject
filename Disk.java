@@ -6,6 +6,7 @@
 package TermProject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -48,22 +49,24 @@ class Console{
     }
     public void start(){
         while(select != 0){
-            System.out.println("File System Management\n"
+            System.out.println("\n\nFile System Management\n"
                     + "0.  Quit\t"
                     + "1.  Make disk\t"
                     + "2.  Format disk\t"
                     + "3.  Umount disk\t"
                     + "4.  Empty space in disk\t"
-                    + "6.  Read file\t"
-                    + "7.  Write file\t"
-                    + "8.  Create file\t"
-                    + "9.  Read file by parallel\t"
+                    + "5.  Read file\t"
+                    + "6.  Write file\t"
+                    + "7.  Create file\t"
+                    + "8.  Read file by parallel\t"
                     + "9.  Delete file\t"
-                    + "10. Defragment");
+                    + "10. Defragment\t"
+                    + "11. Show disk list\t"
+                    + "12. Show File list");
             try{
-                System.out.print("Choose number: ");
+                System.out.print("Choose menu: ");
                 select = Integer.parseInt(in.readLine());
-                if(select > 10 || select < 0){
+                if(select > 12 || select < 0){
                     System.out.println("Out of boundary");
                     continue;
                 }
@@ -71,12 +74,13 @@ class Console{
                 e.printStackTrace();
             }
             switch(select){
-                case 0: System.out.println("System 종료"); break; // 종료
+                case 0: System.out.println("System Quit"); break; // 종료
 
                 case 1: //초기화
-                    System.out.println("Decide disk size(two integer): ");
                     try{
+                        System.out.println("Decide disk number of blocks: ");
                         size1 = Integer.parseInt(in.readLine());
+                        System.out.println("Decide disk blockSize: ");
                         size2 = Integer.parseInt(in.readLine());
                         if(size1 <= 0 || size2 <= 0){
                             System.out.println("size must be bigger than 0");
@@ -85,8 +89,9 @@ class Console{
                     }catch(Exception e){
                         e.printStackTrace();
                     }
-                    sb.diskVector.add(new Disk(size1,size2));
-                    System.out.println("Disk is added successfully\n");
+                    disk = new Disk(size1,size2);
+                    sb.diskVector.add(disk);
+                    System.out.println("Disk"+disk.id+" is added successfully\n");
                     break;
 
                 case 2: //format disk
@@ -124,14 +129,34 @@ class Console{
                     if(disk == null){
                         break;
                     }
-                    getInodeId(chooseDisk());
+
+                    Integer inodeID = getInodeId(disk);
+                    if (inodeID < 0)
+                        continue;
+
+                    disk.write(inodeID, Disk.scanInput());
+
                     break;
                 case 7: //크리에이트
                     disk = chooseDisk();
                     if(disk == null){
                         break;
                     }
-                    chooseDisk();
+
+                    try {
+                        System.out.print("Enter owner: ");
+                        String _owner = in.readLine();
+
+                        System.out.print("Enter readOnly permission(0, 1): ");
+                        boolean _readOnly = in.readLine().equals("1");
+
+                        disk.create(_owner, _readOnly, Disk.scanInput());
+                        System.out.println("File created successfully");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("File create fail");
+                    }
+
                     break;
                 case 8: //페러럴 리드
                     disk = chooseDisk();
@@ -145,7 +170,7 @@ class Console{
                     if(disk == null){
                         break;
                     }
-                    getInodeId(chooseDisk());
+                    disk.delete(getInodeId(disk));
                     break;
                 case 10: //디프레그먼트
                     disk = chooseDisk();
@@ -154,17 +179,34 @@ class Console{
                     }
                     getInodeId(chooseDisk());
                     break;
+                case 11: //Show List
+                    System.out.println("Disk id List");
+                    sb.diskVector.forEach(disk1 -> {System.out.print(disk1.id + "\t");});
+                    System.out.println();
+                    break;
+                case 12: //Show List
+                    disk = chooseDisk();
+                    if(disk == null){
+                        break;
+                    }
+                    for (Integer integer : disk.iNodeIDVector) {
+                        INODE tempINODE = Global.getINODE(integer);
+                        System.out.println("ID: " + tempINODE.id + "\towner: " + tempINODE.owner + "\treadonly: "
+                                + tempINODE.readOnly + "\tdiskID: " + tempINODE.diskID
+                                + "\tstartPoint: " + tempINODE.startPoint + "\tsize: " + tempINODE.size);
+                    }
+                    break;
             }
         }
     }
     private Disk chooseDisk(){
-        System.out.println("Choose a disk");
+        System.out.println("\nChoose a disk");
         for(int i = 0; i< sb.diskVector.size(); i++){
-            System.out.print(i+ ". " + sb.diskVector.elementAt(i).id + " ");
+            System.out.print(i+ ". Disk" + sb.diskVector.elementAt(i).id + "\t");
         }
         System.out.println();
         try{
-            System.out.print("Choose number: ");
+            System.out.print("Choose menu: ");
             num = Integer.parseInt(in.readLine());
             if(num >= sb.diskVector.size() || num < 0){
                 System.out.println("Wrong number");
@@ -176,14 +218,19 @@ class Console{
         }
         return sb.diskVector.elementAt(num);
     }
-    private int getInodeId(Disk disk){
+    private Integer getInodeId(Disk disk){
         System.out.println("Choose a file");
+        if (disk.iNodeIDVector.isEmpty()) {
+            System.out.println("There is no file");
+            return -1;
+        }
+
         for(int i = 0; i< disk.iNodeIDVector.size(); i++){
-            System.out.print(i+ ": " + disk.iNodeIDVector.elementAt(i) + " ");
+            System.out.print(i+ ". FILE" + disk.iNodeIDVector.elementAt(i) + "\t");
         }
         System.out.println();
         try{
-            System.out.print("Choose number: ");
+            System.out.print("Choose menu: ");
             num = Integer.parseInt(in.readLine());
             if(num >= disk.iNodeIDVector.size() || num < 0){
                 System.out.println("Wrong number");
@@ -384,7 +431,7 @@ public class Disk  {
         }
     }
 
-    void create(String[] elem){
+    void create(String _owner, boolean _readOnly, String[] elem){
         int inputSize = elem.length;
 
         // Find start point
@@ -398,15 +445,24 @@ public class Disk  {
 
         // Create new INODE
         INODE create = new INODE();
+        create.diskID = id;
         create.startPoint = startPoint;
         create.size = inputSize;
+        create.owner = _owner;
+        create.readOnly = _readOnly;
         iNodeIDVector.add(create.id);
 
     }
 
     void write(int fileID, String[] elem){
 
-        if (Global.getINODE(fileID).readOnly) return;
+        if (fileID < 0)
+            return;
+
+        if (Global.getINODE(fileID).readOnly) {
+            System.out.println("This file is readOnly");
+            return;
+        }
 
         int fileStartPoint = Global.getINODE(fileID).startPoint;
         int fileSize = Global.getINODE(fileID).size;
@@ -449,12 +505,13 @@ public class Disk  {
 
             int newSize = fileSize + inputSize;
             Global.getINODE(fileID).size = newSize;
+            System.out.println("File written successfully");
         }
     }
 
     public static String[] scanInput(){
         // Get Inputs ( divided by space )
-        System.out.print("Enter numbers: ");
+        System.out.print("Enter numbers(separated by space): ");
         Scanner scan = new Scanner(System.in);
         String inputs;
         inputs = scan.nextLine();
@@ -465,8 +522,17 @@ public class Disk  {
 
 
 
-    void Delete(Integer iNodeID) {
+    void delete(Integer iNodeID) {
+        if (iNodeID < 0) {
+            return;
+        }
+        if (Global.getINODE(iNodeID).readOnly) {
+            System.out.println("This file is readOnly");
+            return;
+        }
+        Global.iNodeVector.remove(Global.getINODE(iNodeID));
         iNodeIDVector.remove(iNodeIDVector.indexOf(iNodeID));
+        System.out.println("File deleted Sucssesfully");
         /*
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the DISK and ID(diskid id):");
@@ -491,7 +557,7 @@ public class Disk  {
         */
     }
     
-    void Degfragment() {
+    void degfragment() {
         /*
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the DISKID :");

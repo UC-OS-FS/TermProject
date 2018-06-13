@@ -1,6 +1,7 @@
-package TermProject;
+﻿package TermProject;
 
 import java.util.Vector;
+import java.util.Scanner;
 
 /*
 1. 문현균
@@ -84,6 +85,65 @@ public class Disk {
     int getFreespace() {
         return getNumBlocks()*getBlockSize()
                 - iNodeIDVector.stream().map(i -> Global.getINODE(i).size).mapToInt(i -> i).sum();
+    }
+
+    void Delete(SuperBlock SB) {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the DISK and ID(diskid id):");
+        int delID;
+        int diskID;
+        diskID = scan.nextInt();
+        delID = scan.nextInt();
+        boolean check = false;
+        for(int i=0; i<SB.diskVector.size(); i++) {
+            if(SB.diskVector.get(i).id == diskID) {
+                for(int j=0; j<SB.diskVector.get(i).iNodeIDVector.size(); j++) {
+                    if(SB.diskVector.get(i).iNodeIDVector.get(j) == delID) {
+                        SB.diskVector.get(i).iNodeIDVector.remove(j);
+                        check = true;
+                    }
+                }                
+            }            
+        }
+        if(check == true) {
+            System.out.println("Inode not found");
+        }
+    }
+    
+    void Degfragment(SuperBlock SB) {
+    
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the DISKID :");
+        int diskID;
+        diskID = scan.nextInt();
+        
+        for(int i=0; i<SB.diskVector.size(); i++) {
+            if(SB.diskVector.get(i).id == diskID) {
+                
+            }            
+        }
+        /*
+        for(int i=0; i<len; i++){
+            if(i == 0){
+                if(list.get(i) != 0){
+                    int temp;
+                    temp = fileMap.get(list.get(i));
+                    fileMap.remove(list.get(i));
+                    fileMap.put(0, temp);
+                }           
+               
+            }
+            else {
+                if(list.get(i-1)+fileMap.get(list.get(i-1))+1 != list.get(i)) {
+                     int temp;
+                    temp = fileMap.get(list.get(i));
+                    fileMap.remove(list.get(i));
+                    fileMap.put(list.get(i-1)+fileMap.get(list.get(i-1))+1, temp);
+                }
+            }
+            
+        }
+    */
     }
 
     public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package TermProject;
+//package TermProject;
 
 import java.util.Vector;
 import java.util.Scanner; 
@@ -71,12 +71,34 @@ class SuperBlock
     }
 }
 
-public class Disk
+public class Disk extends Thread
 {
     public final Integer id;
     Vector<Integer> iNodeIDVector;
     int[][] blocks;
 
+    //0. Thread - Run
+    public void run()
+    {
+        System.out.println(Thread.currentThread().getName());
+    	Scanner scan = new Scanner(System.in);       	
+    	int index; // 시작점
+    	int size; // 크기
+    	
+    	System.out.println("Thread :: Enter the index and size :");
+    	index = scan.nextInt();
+    	size = scan.nextInt();
+    	
+    	if(this.readDisk(index, size) != null)
+    	{
+	    	for(int i=0; i<this.readDisk(index, size).length; i++)
+	    	{
+	    		System.out.println(this.readDisk(index, size)[i]);
+	    	}
+    	}
+    	scan.close();
+    }
+    
     //1. Initialize
     Disk(int numBlocks, int blockSize) {
         id = new Integer(Global.diskID++);
@@ -116,13 +138,35 @@ public class Disk
     	int[] buffer;
     	buffer = new int[size];
     	
-    	for(int i = 0; i < size; i++)
-		{
-			buffer[i] = this.blocks[(i + index) / this.getBlockSize()][(i + index) % this.getBlockSize()];
-		}
-    	    	
-    	return buffer;
+    	for (int i = 0; i < this.iNodeIDVector.size(); i++) //조건 맞는 Disk inodeIDVector에서 찾는 루프
+    	{
+	    	//입력받은 인덱스 값이 StartPoint 와 SP+ Size 사이일 경우
+			if(Global.getINODE(this.iNodeIDVector.get(i)).startPoint + Global.getINODE(this.iNodeIDVector.get(i)).size >= index && Global.getINODE(this.iNodeIDVector.get(i)).startPoint <=index)
+			{
+				// 입력받은 인덱스 + 크기 <= StartPoint + Size
+	    		if(Global.getINODE(this.iNodeIDVector.get(i)).startPoint + Global.getINODE(this.iNodeIDVector.get(i)).size >= index + size)
+	    		{	
+	    			for(int j = 0; j < size; j++)
+	    			{
+	    				buffer[j] = this.blocks[(j + index) / this.getBlockSize()][(j + index) % this.getBlockSize()];
+	    			}	 
+	    	    	return buffer;
+	    		}
+	    		else
+	    		{
+	    			System.out.println("Error : Out of range.");
+	    		}
+			}
+			else
+			{
+				System.out.println("Error : Index out of range");
+			}
+    	}
+    	return null;
     }
+    
+  
+    
 
     public static void main(String[] args)
     {
@@ -130,30 +174,32 @@ public class Disk
 
         // 디스크 생성
         Disk disk1 = new Disk(3, 4); // NumBlock * BlockSize
-        //Disk disk2 = new Disk(4, 5); // 
+       Disk disk2 = new Disk(4, 5); // 
         
         // diskVector에 disk 1, 2 삽입
         sb.diskVector.add(disk1);        
         sb.diskVector.elementAt(0).temp_initial(); // 값 확인 위한 임시값 대입
         
-        //sb.diskVector.add(disk2);
-        //sb.diskVector.lastElement().temp_initial(); // 값 확인 위한 임시값 대입
+        sb.diskVector.add(disk2);
+        sb.diskVector.elementAt(1).temp_initial(); // 값 확인 위한 임시값 대입
         
         // 새 iNode 생성
         INODE iNode1 = new INODE();
-        //INODE iNode2 = new INODE();
+        INODE iNode2 = new INODE();
         
         // iNode 삽입
         sb.diskVector.elementAt(0).iNodeIDVector.add(iNode1.id);        
-        //sb.diskVector.elementAt(1).iNodeIDVector.add(iNode2.id);
-        
+        sb.diskVector.elementAt(1).iNodeIDVector.add(iNode2.id);
         
         // create 대체
+        
+        //파일1 에 대한 inode1
         iNode1.startPoint = 3;
         iNode1.size = 9;
       
-        //iNode2.startPoint = 9;
-        //iNode2.size = 7;       
+        //파일2 에 대한 inode2
+        iNode2.startPoint = 6;
+        iNode2.size = 3;       
         		
         for(int i=0; i<sb.diskVector.size(); i++)
         {
@@ -170,13 +216,17 @@ public class Disk
         }
                 
         //5. Read
-        int[] buffer;
+       /* int[] buffer;
         
     	Scanner scan = new Scanner(System.in);    	
+       	int disk_index; // 디스크 인덱스       	
     	int index; // 시작점
     	int size; // 크기
+    
+    	System.out.println("Enter the disk index you want to read : ");
+    	disk_index = scan.nextInt();
+       	
       	System.out.println("Enter the index and size :");
-    	
     	index = scan.nextInt();
     	size = scan.nextInt();
     	
@@ -184,35 +234,58 @@ public class Disk
     	
        	System.out.println("Index and size values are entered.");
     	
-    	for (int i = 0; i < sb.diskVector.firstElement().iNodeIDVector.size(); i++) //조건 맞는 Disk inodeIDVector에서 찾는 루프
-        {
-    		//입력받은 인덱스 값이 StartPoint 와 SP+ Size 사이일 경우
-    		if(Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).startPoint + Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).size >= index && Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).startPoint <=index)
-    		{
-    			// 입력받은 인덱스 + 크기 <= StartPoint + Size
-	    		if(Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).startPoint + Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).size >= index + size)
-	    		{	    			
-	    			buffer = sb.diskVector.firstElement().readDisk(index, size);
-	    			//return 받은 결과물 출력
-	    			for(int k=0; k < buffer.length; k++)
-	    	    	{
-	    	    		System.out.println(buffer[k] + " ");
-	    	    	}
-	    			break;
-	    		}
-	    		else
-	    		{
-	    			System.out.println("Error : Out of range.");
-	    			break;
-	    		}
-    		}
-    		else
-    		{
-    			System.out.println("Error : Index out of range");
-    		}
-        }
-    
-    
-    	scan.close();
+       	buffer = sb.diskVector.elementAt(disk_index).readDisk(index, size);
+     	//return 받은 결과물 출력
+       	if(buffer != null)
+       	{
+			for(int k=0; k < buffer.length; k++)
+	    	{
+	    		System.out.println(buffer[k] + " ");
+	    	}
+       	}
+       	scan.close();*/
+       	
+      /*  System.out.println(Thread.currentThread().getName());
+        disk1.start();
+      	disk1.start();*/
+        
+      	System.out.println(Thread.currentThread().getName());
+      	for(int i=0; i<3; i++)
+      	{
+	      	new Thread("" + i)
+	      	{
+		      	public void run()
+		      	{
+		      		 int[] buffer;
+		            
+		        	Scanner scan = new Scanner(System.in);    	
+		           	int disk_index; // 디스크 인덱스       	
+		        	int index; // 시작점
+		        	int size; // 크기
+		        
+		        	disk_index = 0;
+		            index = 3;
+		        	size = 5;
+		        	
+		        	buffer = new int[size];
+		        	
+		           	System.out.println("Index and size values are entered.");
+		        	
+		           	buffer = sb.diskVector.elementAt(disk_index).readDisk(index, size);
+		         	
+		           	//return 받은 결과물 출력
+		           	if(buffer != null)
+		           	{
+		           		
+		    			for(int k=0; k < buffer.length; k++)
+		    	    	{
+		    	    		System.out.println("Thread " + getName() + " value : " + buffer[k] + " ");
+		    	    	}
+		           	}
+		           	scan.close();
+		      	}
+	      	}.start();
+      	}
+
     }
 }

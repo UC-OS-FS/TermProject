@@ -18,7 +18,6 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.Scanner;
 
-
 /*
 1. 문현균
 2. 박민근
@@ -375,7 +374,6 @@ public class Disk  {
         return -1;
     }
 
-
     void create(){
 
         // Get Inputs ( divided by space )
@@ -469,6 +467,68 @@ public class Disk  {
     }
 
 
+
+    void Delete(Integer iNodeID) {
+        iNodeIDVector.remove(iNodeIDVector.indexOf(iNodeID));
+        /*
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the DISK and ID(diskid id):");
+        int delID;
+        int diskID;
+        diskID = scan.nextInt();
+        delID = scan.nextInt();
+        boolean check = false;
+        for(int i=0; i<SB.diskVector.size(); i++) {
+            if(SB.diskVector.get(i).id == diskID) {
+                for(int j=0; j<SB.diskVector.get(i).iNodeIDVector.size(); j++) {
+                    if(SB.diskVector.get(i).iNodeIDVector.get(j) == delID) {
+                        SB.diskVector.get(i).iNodeIDVector.remove(j);
+                        check = true;
+                    }
+                }                
+            }            
+        }
+        if(check == true) {
+            System.out.println("Inode not found");
+        }
+        */
+    }
+    
+    void Degfragment() {
+        /*
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the DISKID :");
+        int diskID;
+        diskID = scan.nextInt();
+        
+        for(int i=0; i<SB.diskVector.size(); i++) {
+            if(SB.diskVector.get(i).id == diskID) {
+                
+            }            
+        }
+        /*
+        for(int i=0; i<len; i++){
+            if(i == 0){
+                if(list.get(i) != 0){
+                    int temp;
+                    temp = fileMap.get(list.get(i));
+                    fileMap.remove(list.get(i));
+                    fileMap.put(0, temp);
+                }           
+               
+            }
+            else {
+                if(list.get(i-1)+fileMap.get(list.get(i-1))+1 != list.get(i)) {
+                     int temp;
+                    temp = fileMap.get(list.get(i));
+                    fileMap.remove(list.get(i));
+                    fileMap.put(list.get(i-1)+fileMap.get(list.get(i-1))+1, temp);
+                }
+            }
+            
+        }
+    */
+    }
 
     public static void main(String[] args) {
 

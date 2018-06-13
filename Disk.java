@@ -154,14 +154,19 @@ public class Disk {
         return -1;
     }
 
+    void assignBuffer(int startPoint, int inputSize, String[] elem){
+        // From start point, write
+        for (int i = startPoint, bufferIdx = 0; i < startPoint + inputSize; i++, bufferIdx++){
+            int row = i / getBlockSize();
+            int col = i % getBlockSize();
 
-    void create(){
+            blocks[row][col] = Integer.parseInt(elem[bufferIdx]);
+        }
+    }
 
-        // Get Inputs ( divided by space )
-        Scanner scan = new Scanner(System.in);
-        String inputs;
-        inputs = scan.nextLine();
-        String elem[] = inputs.split(" ");  // Inputs as string array
+    void create(String[] elem){
+
+
         int inputSize = elem.length;
 
         // Find start point
@@ -171,14 +176,7 @@ public class Disk {
             return;
         }
 
-
-        // From start point, write
-        for (int i = startPoint, bufferIdx = 0; i < startPoint + inputSize; i++, bufferIdx++){
-            int row = i / getBlockSize();
-            int col = i % getBlockSize();
-
-            blocks[row][col] = Integer.parseInt(elem[bufferIdx]);
-        }
+        assignBuffer(startPoint, inputSize, elem);
 
         // Create new INODE
         INODE create = new INODE();
@@ -188,18 +186,12 @@ public class Disk {
 
     }
 
-    void write(int fileID){
+    void write(int fileID, String[] elem){
 
         if (Global.getINODE(fileID).readOnly) return;
 
         int fileStartPoint = Global.getINODE(fileID).startPoint;
         int fileSize = Global.getINODE(fileID).size;
-
-        // Input 
-        Scanner scan = new Scanner(System.in);
-        String inputs;
-        inputs = scan.nextLine();
-        String elem[] = inputs.split(" ");  // Inputs as string array
         int inputSize = elem.length;
 
         // sorted Vectors
@@ -232,19 +224,25 @@ public class Disk {
         }
 
 
-        // Assign buffer on disk 
+        // Assign buffer on disk
         if(space < inputSize) System.out.println("cannot write anymore");
         else{
-            for (int i = fileStartPoint + fileSize, bufferIdx = 0; i < fileStartPoint + fileSize + inputSize; i++, bufferIdx++){
-                int row = i / getBlockSize();
-                int col = i % getBlockSize();
-
-                blocks[row][col] = Integer.parseInt(elem[bufferIdx]);
-            }
+            assignBuffer(fileStartPoint + fileSize, inputSize, elem);
 
             int newSize = fileSize + inputSize;
             Global.getINODE(fileID).size = newSize;
         }
+    }
+
+    public static String[] scanInput(){
+        // Get Inputs ( divided by space )
+        System.out.print("Enter numbers: ");
+        Scanner scan = new Scanner(System.in);
+        String inputs;
+        inputs = scan.nextLine();
+        String elem[] = inputs.split(" ");  // Inputs as string array
+
+        return elem;
     }
 
 
@@ -253,9 +251,11 @@ public class Disk {
 
         Disk disk1 = new Disk(100, 100);
         Disk disk2 = new Disk(100, 100);
-        disk1.create();
-        disk2.create();
-        disk1.write(0);
+
+        String[] elem = scanInput();
+        disk1.create(elem);
+        //disk2.create(elem);
+        disk1.write(0, scanInput());
 
         System.out.println("-------INODE ID---------");
         for (int i = 0; i < Global.iNodeVector.size(); i++){

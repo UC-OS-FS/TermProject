@@ -1,6 +1,14 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package TermProject;
 
 import java.util.Vector;
+import java.util.Collections;
+import java.util.Scanner;
+
 
 /*
 1. 문현균
@@ -84,9 +92,184 @@ public class Disk {
     int getFreespace() {
         return getNumBlocks()*getBlockSize()
                 - iNodeIDVector.stream().map(i -> Global.getINODE(i).size).mapToInt(i -> i).sum();
+
     }
 
+    int findStartPoint(int inputSize){
+        //Set keys = fileMap.keySet();
+        //List list = new ArrayList(keys);
+        //Collections.sort(list);
+
+
+        // sorted ID Vector
+        Vector<Integer> spVector = new Vector(iNodeIDVector.size());
+        Vector<Integer> sizeVector = new Vector(iNodeIDVector.size());
+
+
+
+
+        // sorted start point vector
+        for (int i = 0; i < iNodeIDVector.size(); i++){
+
+            spVector.add(Global.iNodeVector.elementAt(iNodeIDVector.elementAt(i)).startPoint);
+        }
+
+        Collections.sort(spVector);
+
+
+        // sorted size vector
+        for (int i = 0; i < iNodeIDVector.size(); i++){
+            for (int j = 0; j < iNodeIDVector.size(); i++){
+                if(spVector.elementAt(j) == Global.iNodeVector.elementAt(j).startPoint){
+                    sizeVector.add(Global.iNodeVector.elementAt(j).size);
+                    break;
+                }
+            }
+        }
+
+        int beginning = 0;
+        int end = getBlockSize() * getNumBlocks();
+
+        if (spVector.size() == 0 && end > inputSize ) return 0;
+        else {
+
+            for (int i = 0; i < spVector.size(); i ++){
+                if (i == 0){
+                    if (inputSize < spVector.elementAt(i) - beginning)
+
+                        return beginning;
+                }
+
+                if (i == spVector.size() - 1){
+                    if(inputSize < end - (spVector.elementAt(i) + sizeVector.elementAt(i)))  // 끝 - (시작 + 사이즈)
+                        return (spVector.elementAt(i) + sizeVector.elementAt(i));
+
+                }
+
+                if (i > 0) {
+                    if( inputSize <  spVector.elementAt(i) - (spVector.elementAt(i-1) + sizeVector.elementAt(i-1))) // 현재 파일 시작 - ( 이전 파일 시작 + 이전 파일 사이즈 )
+                        return (spVector.elementAt(i-1) + sizeVector.elementAt(i-1));
+                }
+            }
+
+        }
+        return -1;
+    }
+
+
+    void create(){
+
+        // Get Inputs ( divided by space )
+        Scanner scan = new Scanner(System.in);
+        String inputs;
+        inputs = scan.nextLine();
+        String elem[] = inputs.split(" ");  // Inputs as string array
+        int inputSize = elem.length;
+
+        // Find start point
+        int startPoint = findStartPoint(inputSize);
+        if (startPoint == -1 ) {
+            System.out.println("Cannot find start point, too big file or defragment is needed");
+            return;
+        }
+
+
+        // From start point, write
+        for (int i = startPoint, bufferIdx = 0; i < startPoint + inputSize; i++, bufferIdx++){
+            int row = i / getBlockSize();
+            int col = i % getBlockSize();
+
+            blocks[row][col] = Integer.parseInt(elem[bufferIdx]);
+        }
+
+        // Create new INODE
+        INODE create = new INODE();
+        create.startPoint = startPoint;
+        create.size = inputSize;
+        iNodeIDVector.add(create.id);
+
+    }
+
+    void write(int fileID){
+
+        if (Global.getINODE(fileID).readOnly) return;
+
+        int fileStartPoint = Global.getINODE(fileID).startPoint;
+        int fileSize = Global.getINODE(fileID).size;
+
+        // Input 
+        Scanner scan = new Scanner(System.in);
+        String inputs;
+        inputs = scan.nextLine();
+        String elem[] = inputs.split(" ");  // Inputs as string array
+        int inputSize = elem.length;
+
+        // sorted Vectors
+        Vector<Integer> spVector = new Vector(iNodeIDVector.size());
+
+
+        // sorted start point vector
+        for (int i = 0; i < iNodeIDVector.size(); i++){
+            spVector.add(Global.iNodeVector.elementAt(iNodeIDVector.elementAt(i)).startPoint);
+        }
+        Collections.sort(spVector);
+
+
+        // Find index in spVector
+        int idx = 0;  // idx_in_SpVector
+        for (int i = 0; i < spVector.size(); i++){
+            if (fileStartPoint == spVector.elementAt(i)){
+                idx = i;
+                break;
+            }
+        }
+
+        // Find free space to append
+        int space = 0;
+        if (fileStartPoint == spVector.elementAt(spVector.size() - 1)){
+            space = getBlockSize() * getNumBlocks() - (fileStartPoint + fileSize);
+        }
+        else {
+            space = spVector.elementAt(idx+1) - (fileStartPoint + fileSize);
+        }
+
+
+        // Assign buffer on disk 
+        if(space < inputSize) System.out.println("cannot write anymore");
+        else{
+            for (int i = fileStartPoint + fileSize, bufferIdx = 0; i < fileStartPoint + fileSize + inputSize; i++, bufferIdx++){
+                int row = i / getBlockSize();
+                int col = i % getBlockSize();
+
+                blocks[row][col] = Integer.parseInt(elem[bufferIdx]);
+            }
+
+            int newSize = fileSize + inputSize;
+            Global.getINODE(fileID).size = newSize;
+        }
+    }
+
+
+
     public static void main(String[] args) {
+
+        Disk disk1 = new Disk(100, 100);
+        Disk disk2 = new Disk(100, 100);
+        disk1.create();
+        disk2.create();
+        disk1.write(0);
+
+        System.out.println("-------INODE ID---------");
+        for (int i = 0; i < Global.iNodeVector.size(); i++){
+            System.out.print(Global.iNodeVector.elementAt(i).id);
+            System.out.println(" ");
+        }
+
+        System.out.println(disk1.getFreespace());
+        
+
+        
+        /*
         SuperBlock sb = new SuperBlock();
 
         // 디스크 생성
@@ -120,5 +303,7 @@ public class Disk {
         for (int i = 0; i < sb.diskVector.firstElement().iNodeIDVector.size(); i++) {
             System.out.println(Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).owner);
         }
+        */
+
     }
 }

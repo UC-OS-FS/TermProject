@@ -113,8 +113,8 @@ public class Disk {
         */
     }
     
-    void Degfragment(SuperBlock SB) {
-    
+    void Degfragment() {
+        /*
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the DISKID :");
         int diskID;

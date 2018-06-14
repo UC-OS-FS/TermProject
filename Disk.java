@@ -1,4 +1,4 @@
-﻿/*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,13 +9,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
-import java.util.Collections;
-import java.util.Scanner;
 import java.util.Vector;
 import java.util.Scanner;
 
@@ -151,7 +146,7 @@ class Console{
                         boolean _readOnly = in.readLine().equals("1");
 
                         disk.create(_owner, _readOnly, Disk.scanInput());
-                        System.out.println("File created successfully");
+
                     } catch (IOException e) {
                         e.printStackTrace();
                         System.out.println("File create fail");
@@ -177,7 +172,7 @@ class Console{
                     if(disk == null){
                         break;
                     }
-                    getInodeId(chooseDisk());
+                    disk.defragment();
                     break;
                 case 11: //Show List
                     System.out.println("Disk id List");
@@ -375,8 +370,7 @@ public class Disk  {
 
         // sorted start point vector
         for (int i = 0; i < iNodeIDVector.size(); i++){
-
-            spVector.add(Global.iNodeVector.elementAt(iNodeIDVector.elementAt(i)).startPoint);
+            spVector.add(Global.getINODE(iNodeIDVector.elementAt(i)).startPoint);
         }
 
         Collections.sort(spVector);
@@ -451,7 +445,7 @@ public class Disk  {
         create.owner = _owner;
         create.readOnly = _readOnly;
         iNodeIDVector.add(create.id);
-
+        System.out.println("File created successfully");
     }
 
     void write(int fileID, String[] elem){
@@ -538,8 +532,8 @@ public class Disk  {
     
     void degfragment() {
         
-        List<Integer> temp = null;        
-        Vector<INODE> sortedvecter = null;
+        Vector<Integer> temp = new Vector<>();
+        Vector<INODE> sortedvecter = new Vector<>();
         for(int i=0; i<Global.iNodeVector.size(); i++) {
            if(Global.iNodeVector.get(i).diskID == this.id) {
                temp.add(Global.iNodeVector.get(i).startPoint);          
@@ -582,7 +576,8 @@ public class Disk  {
                    }
                 }
             }   
-        }          
+        }
+        System.out.println("Defragment Sucssesfully");
     }
 
     public static void main(String[] args) {

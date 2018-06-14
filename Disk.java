@@ -1,4 +1,4 @@
-/*
+﻿/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -522,7 +522,7 @@ public class Disk  {
 
 
 
-    void delete(Integer iNodeID) {
+   void delete(Integer iNodeID) {
         if (iNodeID < 0) {
             return;
         }
@@ -533,64 +533,59 @@ public class Disk  {
         Global.iNodeVector.remove(Global.getINODE(iNodeID));
         iNodeIDVector.remove(iNodeIDVector.indexOf(iNodeID));
         System.out.println("File deleted Sucssesfully");
-        /*
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Enter the DISK and ID(diskid id):");
-        int delID;
-        int diskID;
-        diskID = scan.nextInt();
-        delID = scan.nextInt();
-        boolean check = false;
-        for(int i=0; i<SB.diskVector.size(); i++) {
-            if(SB.diskVector.get(i).id == diskID) {
-                for(int j=0; j<SB.diskVector.get(i).iNodeIDVector.size(); j++) {
-                    if(SB.diskVector.get(i).iNodeIDVector.get(j) == delID) {
-                        SB.diskVector.get(i).iNodeIDVector.remove(j);
-                        check = true;
-                    }
-                }                
-            }            
-        }
-        if(check == true) {
-            System.out.println("Inode not found");
-        }
-        */
+       
     }
     
     void degfragment() {
-        /*
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Enter the DISKID :");
-        int diskID;
-        diskID = scan.nextInt();
         
-        for(int i=0; i<SB.diskVector.size(); i++) {
-            if(SB.diskVector.get(i).id == diskID) {
-                
-            }            
+        List<Integer> temp = null; 
+        Vector<INODE> sortedvecter = null;
+        for(int i=0; i<Global.iNodeVector.size(); i++) {
+           if(Global.iNodeVector.get(i).diskID == this.id) {
+               temp.add(Global.iNodeVector.get(i).startPoint);
+           }
         }
-        /*
-        for(int i=0; i<len; i++){
-            if(i == 0){
-                if(list.get(i) != 0){
-                    int temp;
-                    temp = fileMap.get(list.get(i));
-                    fileMap.remove(list.get(i));
-                    fileMap.put(0, temp);
-                }           
-               
-            }
-            else {
-                if(list.get(i-1)+fileMap.get(list.get(i-1))+1 != list.get(i)) {
-                     int temp;
-                    temp = fileMap.get(list.get(i));
-                    fileMap.remove(list.get(i));
-                    fileMap.put(list.get(i-1)+fileMap.get(list.get(i-1))+1, temp);
+        Collections.sort(temp);
+        
+        for(int i=0; i<temp.size(); i++) {
+            for(int j=0; j<Global.iNodeVector.size(); j++) {
+                if(Global.iNodeVector.get(j).startPoint == temp.get(i)) {
+                    sortedvecter.add(Global.iNodeVector.get(j));
                 }
             }
-            
         }
-    */
+        
+        for(int i=0; i<sortedvecter.size(); i++) {
+            if(i==0) {
+                 if(sortedvecter.get(i).startPoint != 0) {
+                    sortedvecter.get(i).startPoint = 0;
+                 }
+            }
+            else {
+                if(sortedvecter.get(i-1).startPoint+sortedvecter.get(i-1).size+1 != sortedvecter.get(i).startPoint) {
+                    sortedvecter.get(i).startPoint = sortedvecter.get(i-1).startPoint+sortedvecter.get(i-1).size;
+                }
+            }
+        }
+        
+       for(int i=0; i<sortedvecter.size(); i++) {
+            for(int j=0; j<Global.iNodeVector.size(); j++) {
+                if(Global.iNodeVector.get(j).id == sortedvecter.get(i).id) {
+                   for(int k=0; k<sortedvecter.get(i).size; k++) {
+                       int point1 = sortedvecter.get(i).startPoint;
+                       int point2 = Global.iNodeVector.get(j).startPoint;
+                       int row1 = point1 / getBlockSize();
+                       int col1 = point1 % getBlockSize();
+                       int row2 = point2 / getBlockSize();
+                       int col2 = point2 % getBlockSize();
+                       blocks[row1][col1] = blocks[row2][col2];
+                   }
+                   Global.iNodeVector.get(j).startPoint = sortedvecter.get(i).startPoint;
+                }
+            }   
+        }
+    
+       
     }
 
     public static void main(String[] args) {

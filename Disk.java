@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package TermProject;
 
 import java.io.BufferedReader;
@@ -13,7 +8,10 @@ import java.util.*;
 import java.util.Collections;
 import java.util.Vector;
 import java.util.Scanner;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Collections;
+import java.util.Scanner;
 /*
 1. 문현균
 2. 박민근
@@ -94,7 +92,7 @@ class Console{
                     if(disk == null){
                         break;
                     }
-                    disk.formatDisk();
+                    //disk.formatDisk();
                     System.out.println("Disk got formated successfully");
                     break;
                 case 3: //unmount disk
@@ -102,7 +100,7 @@ class Console{
                     if(disk == null){
                         break;
                     }
-                    sb.unmountDisk(disk);
+                    //sb.unmountDisk(disk);
                     System.out.println("Disk got unmounted successfully");
                     break;
                 case 4: //엠티스페이스
@@ -116,9 +114,49 @@ class Console{
                     disk = chooseDisk();
                     if(disk == null){
                         break;
-                    }
-                    getInodeId(chooseDisk());
+                    }/*
+                    getInodeId(chooseDisk());*/
+                    //----------------------------------------------------------------------------------
+                    
+                    int[] buffer;
+                    
+                	//Scanner scan = new Scanner(System.in);    	                  	
+                	int index = 0; // 시작점
+                	int size = 0; // 크기
+                                   	
+				try {
+                  	System.out.println("Enter the index :");
+					index = Integer.parseInt(in.readLine());
+                  	System.out.println("Enter the size :");
+                  	size = Integer.parseInt(in.readLine());
+				} catch (NumberFormatException | IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+//                	index = scan.nextInt();
+//                	size = scan.nextInt();
+                	
+                	buffer = new int[size];
+                	
+                   	System.out.println("Index and size values are entered.");
+                	
+                   	buffer = disk.readDisk(index, size);
+                 	//return 받은 결과물 출력
+                   	if(buffer != null)
+                   	{
+            			for(int k=0; k < buffer.length; k++)
+            	    	{
+            	    		System.out.println(buffer[k] + " ");
+            	    	}
+                   	}
+                   	else
+                   	{
+                   		System.out.println("Buffer is null");
+                   	}
+                   	//scan close 시 에러 발생...
+                   	//scan.close();
                     break;
+                    // ---------------------------------------------------------------------
                 case 6: //라이트
                     disk = chooseDisk();
                     if(disk == null){
@@ -158,7 +196,40 @@ class Console{
                     if(disk == null){
                         break;
                     }
-                    getInodeId(chooseDisk());
+                    int threadNum = 0;
+                    try {
+                      	System.out.println("Enter the number of thread you want to create :");
+    					threadNum = Integer.parseInt(in.readLine());
+    				}
+                    catch (NumberFormatException | IOException e1) {
+    					// TODO Auto-generated catch block
+    					e1.printStackTrace();
+    				}               
+                    for(int i=0; i<threadNum; i++)
+                  	{
+            	      	new Thread("" + i)
+            	      	{
+            		      	public void run()
+            		      	{
+            		      		int[] buffer;            		            
+            		        	       	
+            		        	int index; // 시작점
+            		        	int size; // 크기
+            		        	
+            		        	for (int i = 0; i < disk.iNodeIDVector.size(); i++) //조건 맞는 Disk inodeIDVector에서 찾는 루프
+            		        	{    				
+            		        		index = Global.getINODE(disk.iNodeIDVector.get(i)).startPoint;
+            		        		size = Global.getINODE(disk.iNodeIDVector.get(i)).size;
+            		        		buffer = new int[size];
+    		    	    			for(int j = 0; j < size; j++)
+    		    	    			{
+    		    	    				buffer[j] = disk.blocks[(j + index) / disk.getBlockSize()][(j + index) % disk.getBlockSize()];
+    		    	    				System.out.println("Thread " + getName() + " value : " + buffer[j] + " ");
+    		    	    			}            		    	            		
+            		        	}            		        	
+            		      	}
+            	      	}.start();
+                  	}                    
                     break;
                 case 9: // 딜리트
                     disk = chooseDisk();
@@ -257,9 +328,9 @@ class Global {
     }
 }
 
-
-class INODE {
 //id, startpoint, size 포함
+class INODE 
+{
     public final Integer id;
     public Integer diskID;      //default null
     public String owner;        //default null
@@ -282,37 +353,52 @@ class SuperBlock
     {
         diskVector = new Vector<>();
     }
-
-    public Disk getDisk(Integer id) {
-        for (int i = 0; i < diskVector.size(); i++) {
+    public Disk getDisk(Integer id)
+    {
+        for (int i = 0; i < diskVector.size(); i++)
+        {
             if (Integer.compare(diskVector.get(i).id, id) == 0)
                 return diskVector.get(i);
         }
         return null;
     }
-
-
-    void unmountDisk(Disk disk){
-        diskVector.remove(disk);
-
-        for(int tmp :disk.iNodeIDVector){
-            Global.iNodeVector.remove(Global.getINODE(tmp));
-        }
-    }
 }
 
-public class Disk  {
+public class Disk extends Thread
+{
     public final Integer id;
     Vector<Integer> iNodeIDVector;
     int[][] blocks;
 
+    //0. Thread - Run
+    public void run()
+    {
+        System.out.println(Thread.currentThread().getName());
+    	Scanner scan = new Scanner(System.in);       	
+    	int index; // 시작점
+    	int size; // 크기
+    	
+    	System.out.println("Thread :: Enter the index and size :");
+    	index = scan.nextInt();
+    	size = scan.nextInt();
+    	
+    	if(this.readDisk(index, size) != null)
+    	{
+	    	for(int i=0; i<this.readDisk(index, size).length; i++)
+	    	{
+	    		System.out.println(this.readDisk(index, size)[i]);
+	    	}
+    	}
+    	scan.close();
+    }
+    
     //1. Initialize
     Disk(int numBlocks, int blockSize) {
         id = new Integer(Global.diskID++);
         iNodeIDVector = new Vector<>();
         blocks = new int[numBlocks][blockSize];
     }
-    void temp_initial()
+    void temp_initial() // 임시 값 부여
     {
     	int k = 0;
     	for(int i=0; i<this.getNumBlocks();i++) // i : 0 ~ 11
@@ -332,28 +418,37 @@ public class Disk  {
     int getBlockSize() {
         return getNumBlocks() > 0 ? blocks[0].length : 0;
     }
-    void formatDisk(){
-//        if(!vec.contains(inodeId)){
-//            System.out.println("There is no requested file");
-//            return;
-//        }
-//        if(Global.iNodeHashMap.get(inodeId).readOnly){
-//            System.out.println("You don't have permission");
-//            return;
-//        }
-        for(int tmp :iNodeIDVector){
-            Global.iNodeVector.remove(Global.getINODE(tmp));
-        }
-        iNodeIDVector.clear();
-    }
 
     //4. Empty space
     int getFreespace() {
         return getNumBlocks()*getBlockSize()
                 - iNodeIDVector.stream().map(i -> Global.getINODE(i).size).mapToInt(i -> i).sum();
-
     }
-
+    
+    //5. Read disk
+    int[] readDisk (int index, int size)
+    {
+    	int[] buffer = new int[size];
+    	
+    	for (int i = 0; i < this.iNodeIDVector.size(); i++) //조건 맞는 Disk inodeIDVector에서 찾는 루프
+    	{    				
+	    	//입력받은 인덱스 값이 StartPoint 와 SP + Size 사이일 경우
+			if(Global.getINODE(this.iNodeIDVector.get(i)).startPoint + Global.getINODE(this.iNodeIDVector.get(i)).size >= index && Global.getINODE(this.iNodeIDVector.get(i)).startPoint <= index)
+			{
+				// 입력받은 인덱스 + 크기 <= StartPoint + Size
+	    		if(Global.getINODE(this.iNodeIDVector.get(i)).startPoint + Global.getINODE(this.iNodeIDVector.get(i)).size >= index + size)
+	    		{	
+	    			for(int j = 0; j < size; j++)
+	    			{
+	    				buffer[j] = this.blocks[(j + index) / this.getBlockSize()][(j + index) % this.getBlockSize()];
+	    			}	 
+	    	    	return buffer;
+	    		}
+			}    		
+    	}
+    	System.out.println("Error : Out of range");
+    	return null;
+    }
 
     int findStartPoint(int inputSize){
         //Set keys = fileMap.keySet();
@@ -530,7 +625,7 @@ public class Disk  {
        
     }
     
-    void degfragment() {
+    void defragment() {
         
         Vector<Integer> temp = new Vector<>();
         Vector<INODE> sortedvecter = new Vector<>();
@@ -581,8 +676,9 @@ public class Disk  {
     }
 
     public static void main(String[] args) {
-
-        /*
+    	Console c = new Console(new SuperBlock());
+    	c.start();
+    	/*
         Disk disk1 = new Disk(100, 100);
         Disk disk2 = new Disk(100, 100);
 
@@ -598,58 +694,82 @@ public class Disk  {
         }
 
         System.out.println(disk1.getFreespace());
-        */
-
-        
-        /*
         SuperBlock sb = new SuperBlock();
+        
+        
+        System.out.println(Thread.currentThread().getName());
+      	for(int i=0; i<3; i++)
+      	{
+	      	new Thread("" + i)
+	      	{
+		      	public void run()
+		      	{
+		      		 int[] buffer;
+		            
+		        	Scanner scan = new Scanner(System.in);    	
+		           	int disk_index; // 디스크 인덱스       	
+		        	int index; // 시작점
+		        	int size; // 크기
+		        
+		        	disk_index = 0;
+		            index = 3;
+		        	size = 5;
+		        	
+		        	buffer = new int[size];
+		        	
+		           	System.out.println("Index and size values are entered.");
+		        	
+		           	buffer = sb.diskVector.elementAt(disk_index).readDisk(index, size);
+		         	
+		           	//return 받은 결과물 출력
+		           	if(buffer != null)
+		           	{
+		           		
+		    			for(int k=0; k < buffer.length; k++)
+		    	    	{
+		    	    		System.out.println("Thread " + getName() + " value : " + buffer[k] + " ");
+		    	    	}
+		           	}
+		           	scan.close();
+		      	}
+	      	}.start();
+      	}
+        
+        
 
-    
-    //5. Read disk
-    int[] readDisk(int index, int size)
-    {
-    	int[] buffer;
-    	buffer = new int[size];
-    	
-    	for(int i = 0; i < size; i++)
-		{
-			buffer[i] = this.blocks[(i + index) / this.getBlockSize()][(i + index) % this.getBlockSize()];
-		}
-    	    	
-    	return buffer;
-    }
-
-    public static void main(String[] args)
+    */
+    /*public static void main(String[] args)
     {
         SuperBlock sb = new SuperBlock(); // 슈퍼블록 할당
 
-
         // 디스크 생성
         Disk disk1 = new Disk(3, 4); // NumBlock * BlockSize
-        //Disk disk2 = new Disk(4, 5); // 
+       Disk disk2 = new Disk(4, 5); // 
         
         // diskVector에 disk 1, 2 삽입
         sb.diskVector.add(disk1);        
         sb.diskVector.elementAt(0).temp_initial(); // 값 확인 위한 임시값 대입
         
-        //sb.diskVector.add(disk2);
-        //sb.diskVector.lastElement().temp_initial(); // 값 확인 위한 임시값 대입
+        sb.diskVector.add(disk2);
+        sb.diskVector.elementAt(1).temp_initial(); // 값 확인 위한 임시값 대입
         
         // 새 iNode 생성
         INODE iNode1 = new INODE();
-        //INODE iNode2 = new INODE();
+        INODE iNode2 = new INODE();
         
         // iNode 삽입
         sb.diskVector.elementAt(0).iNodeIDVector.add(iNode1.id);        
-        //sb.diskVector.elementAt(1).iNodeIDVector.add(iNode2.id);
-        
+        sb.diskVector.elementAt(1).iNodeIDVector.add(iNode2.id);
         
         // create 대체
+        
+        //파일1 에 대한 inode1
         iNode1.startPoint = 3;
         iNode1.size = 9;
       
-        //iNode2.startPoint = 9;
-        //iNode2.size = 7;       
+        //파일2 에 대한 inode2
+        iNode2.startPoint = 6;
+        iNode2.size = 3;       
         		
         for(int i=0; i<sb.diskVector.size(); i++)
         {
@@ -663,16 +783,20 @@ public class Disk  {
         for (int i = 0; i < sb.diskVector.firstElement().iNodeIDVector.size(); i++)
         {
             System.out.println(Global.getINODE(sb.diskVector.elementAt(i).iNodeIDVector.get(i)).startPoint + " " + Global.getINODE(sb.diskVector.elementAt(i).iNodeIDVector.get(i)).size);        
-        }
+        }*/
                 
         //5. Read
-        int[] buffer;
+       /* int[] buffer;
         
     	Scanner scan = new Scanner(System.in);    	
+       	int disk_index; // 디스크 인덱스       	
     	int index; // 시작점
     	int size; // 크기
+    
+    	System.out.println("Enter the disk index you want to read : ");
+    	disk_index = scan.nextInt();
+       	
       	System.out.println("Enter the index and size :");
-    	
     	index = scan.nextInt();
     	size = scan.nextInt();
     	
@@ -680,38 +804,19 @@ public class Disk  {
     	
        	System.out.println("Index and size values are entered.");
     	
-    	for (int i = 0; i < sb.diskVector.firstElement().iNodeIDVector.size(); i++) //조건 맞는 Disk inodeIDVector에서 찾는 루프
-        {
-    		//입력받은 인덱스 값이 StartPoint 와 SP+ Size 사이일 경우
-    		if(Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).startPoint + Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).size >= index && Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).startPoint <=index)
-    		{
-    			// 입력받은 인덱스 + 크기 <= StartPoint + Size
-	    		if(Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).startPoint + Global.getINODE(sb.diskVector.firstElement().iNodeIDVector.get(i)).size >= index + size)
-	    		{	    			
-	    			buffer = sb.diskVector.firstElement().readDisk(index, size);
-	    			//return 받은 결과물 출력
-	    			for(int k=0; k < buffer.length; k++)
-	    	    	{
-	    	    		System.out.println(buffer[k] + " ");
-	    	    	}
-	    			break;
-	    		}
-	    		else
-	    		{
-	    			System.out.println("Error : Out of range.");
-	    			break;
-	    		}
-    		}
-    		else
-    		{
-    			System.out.println("Error : Index out of range");
-    		}
-        }
-
-        */
-
-        Console c = new Console(new SuperBlock());
-        c.start();
+       	buffer = sb.diskVector.elementAt(disk_index).readDisk(index, size);
+     	//return 받은 결과물 출력
+       	if(buffer != null)
+       	{
+			for(int k=0; k < buffer.length; k++)
+	    	{
+	    		System.out.println(buffer[k] + " ");
+	    	}
+       	}
+       	scan.close();
+       	
+      /*  System.out.println(Thread.currentThread().getName());
+        disk1.start();
+      	disk1.start();*/
     }
 }
-

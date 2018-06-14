@@ -450,6 +450,10 @@ public class Disk extends Thread
     	return null;
     }
 
+    int getSizeByID(int fileID){
+        return Global.getINODE(fileID).size;
+    }
+
     int findStartPoint(int inputSize){
         //Set keys = fileMap.keySet();
         //List list = new ArrayList(keys);
@@ -458,19 +462,19 @@ public class Disk extends Thread
 
         // sorted ID Vector
         Vector<Integer> spVector = new Vector(iNodeIDVector.size());
-        Vector<Integer> sizeVector = new Vector(iNodeIDVector.size());
-
-
-
+        //Vector<Integer> sizeVector = new Vector(iNodeIDVector.size());
+        HashMap<Integer, Integer> spIDMap = new HashMap();
 
         // sorted start point vector
         for (int i = 0; i < iNodeIDVector.size(); i++){
             spVector.add(Global.getINODE(iNodeIDVector.elementAt(i)).startPoint);
+            spIDMap.put(spVector.elementAt(i), iNodeIDVector.elementAt(i));
         }
 
         Collections.sort(spVector);
 
 
+            /*
         // sorted size vector
         for (int i = 0; i < iNodeIDVector.size(); i++){
             for (int j = 0; j < iNodeIDVector.size(); i++){
@@ -480,6 +484,7 @@ public class Disk extends Thread
                 }
             }
         }
+        */
 
         int beginning = 0;
         int end = getBlockSize() * getNumBlocks();
@@ -489,20 +494,20 @@ public class Disk extends Thread
 
             for (int i = 0; i < spVector.size(); i ++){
                 if (i == 0){
-                    if (inputSize < spVector.elementAt(i) - beginning)
+                    if (inputSize <= spVector.elementAt(i) - beginning)
 
                         return beginning;
                 }
 
                 if (i == spVector.size() - 1){
-                    if(inputSize < end - (spVector.elementAt(i) + sizeVector.elementAt(i)))  // 끝 - (시작 + 사이즈)
-                        return (spVector.elementAt(i) + sizeVector.elementAt(i));
+                    if(inputSize <= end - (spVector.elementAt(i) + getSizeByID(spIDMap.get(spVector.elementAt(i)))))  // ë - (ìì + ì¬ì´ì¦)
+                        return (spVector.elementAt(i) + getSizeByID(spIDMap.get(spVector.elementAt(i))));
 
                 }
 
                 if (i > 0) {
-                    if( inputSize <  spVector.elementAt(i) - (spVector.elementAt(i-1) + sizeVector.elementAt(i-1))) // 현재 파일 시작 - ( 이전 파일 시작 + 이전 파일 사이즈 )
-                        return (spVector.elementAt(i-1) + sizeVector.elementAt(i-1));
+                    if( inputSize <=  spVector.elementAt(i) - (spVector.elementAt(i-1) + getSizeByID(spIDMap.get(spVector.elementAt(i-1))))) // íì¬ íì¼ ìì - ( ì´ì  íì¼ ìì + ì´ì  íì¼ ì¬ì´ì¦ )
+                        return (spVector.elementAt(i-1) + getSizeByID(spIDMap.get(spVector.elementAt(i-1))));
                 }
             }
 
@@ -520,6 +525,27 @@ public class Disk extends Thread
         }
     }
 
+    void assignBuffer(int startPoint, int inputSize, int[] elem){
+        // From start point, write
+        for (int i = startPoint, bufferIdx = 0; i < startPoint + inputSize; i++, bufferIdx++){
+            int row = i / getBlockSize();
+            int col = i % getBlockSize();
+
+            blocks[row][col] = elem[bufferIdx];
+        }
+    }
+
+    int[] copy(int startPoint, int size){
+        int[] arr = new int[size];
+
+        for(int i = 0; i < size; i++){
+            int row = i / getBlockSize();
+            int col = i % getBlockSize();
+            arr[i] = blocks[row][col];
+        }
+
+        return arr;
+    }
     void create(String _owner, boolean _readOnly, String[] elem){
         int inputSize = elem.length;
 
@@ -563,7 +589,7 @@ public class Disk extends Thread
 
         // sorted start point vector
         for (int i = 0; i < iNodeIDVector.size(); i++){
-            spVector.add(Global.iNodeVector.elementAt(iNodeIDVector.elementAt(i)).startPoint);
+            spVector.add(Global.getINODE(iNodeIDVector.elementAt(i)).startPoint);
         }
         Collections.sort(spVector);
 
@@ -588,15 +614,29 @@ public class Disk extends Thread
 
 
         // Assign buffer on disk
-        if(space < inputSize) System.out.println("cannot write anymore");
+        if(space < inputSize) {
+            int newStartPoint = findStartPoint(fileSize + inputSize);
+
+            if (newStartPoint == -1 ){
+                System.out.println("cannot write anymore");
+                return;
+            }
+            else{
+                int[] copy = copy(fileStartPoint, fileSize);
+                assignBuffer(newStartPoint, fileSize, copy);
+                assignBuffer(newStartPoint + fileSize, inputSize, elem);
+
+                Global.getINODE(fileID).startPoint = newStartPoint;
+            }
+        }
         else{
             assignBuffer(fileStartPoint + fileSize, inputSize, elem);
-
-            int newSize = fileSize + inputSize;
-            Global.getINODE(fileID).size = newSize;
-            System.out.println("File written successfully");
         }
+        int newSize = fileSize + inputSize;
+        Global.getINODE(fileID).size = newSize;
+        System.out.println("File written successfully");
     }
+
 
     public static String[] scanInput(){
         // Get Inputs ( divided by space )

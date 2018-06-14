@@ -562,7 +562,7 @@ public class Disk  {
                  }
             }
             else {
-                if(sortedvecter.get(i-1).startPoint+sortedvecter.get(i-1).size+1 != sortedvecter.get(i).startPoint) {
+                if(sortedvecter.get(i-1).startPoint+sortedvecter.get(i-1).size != sortedvecter.get(i).startPoint) {
                     sortedvecter.get(i).startPoint = sortedvecter.get(i-1).startPoint+sortedvecter.get(i-1).size;
                 }
             }
@@ -572,8 +572,8 @@ public class Disk  {
             for(int j=0; j<Global.iNodeVector.size(); j++) {
                 if(Global.iNodeVector.get(j).id == sortedvecter.get(i).id) {
                    for(int k=0; k<sortedvecter.get(i).size; k++) {
-                       int point1 = sortedvecter.get(i).startPoint;
-                       int point2 = Global.iNodeVector.get(j).startPoint;
+                       int point1 = sortedvecter.get(i).startPoint + k;
+                       int point2 = Global.iNodeVector.get(j).startPoint + k;
                        int row1 = point1 / getBlockSize();
                        int col1 = point1 % getBlockSize();
                        int row2 = point2 / getBlockSize();

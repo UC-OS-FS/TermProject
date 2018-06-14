@@ -538,11 +538,13 @@ public class Disk  {
     
     void degfragment() {
         
-        List<Integer> temp = null; 
+        List<Integer> temp = null;
+        List<Integer> savestartpoint = null;
         Vector<INODE> sortedvecter = null;
         for(int i=0; i<Global.iNodeVector.size(); i++) {
            if(Global.iNodeVector.get(i).diskID == this.id) {
-               temp.add(Global.iNodeVector.get(i).startPoint);
+               temp.add(Global.iNodeVector.get(i).startPoint);            
+               savestartpoint.add(Global.iNodeVector.get(i).startPoint);
            }
         }
         Collections.sort(temp);
@@ -572,20 +574,17 @@ public class Disk  {
             for(int j=0; j<Global.iNodeVector.size(); j++) {
                 if(Global.iNodeVector.get(j).id == sortedvecter.get(i).id) {
                    for(int k=0; k<sortedvecter.get(i).size; k++) {
-                       int point1 = sortedvecter.get(i).startPoint + k;
+                       int point1 = savestartpoint.get(i) + k;
                        int point2 = Global.iNodeVector.get(j).startPoint + k;
                        int row1 = point1 / getBlockSize();
                        int col1 = point1 % getBlockSize();
                        int row2 = point2 / getBlockSize();
                        int col2 = point2 % getBlockSize();
-                       blocks[row1][col1] = blocks[row2][col2];
+                       blocks[row2][col2] = blocks[row1][col1];
                    }
-                   Global.iNodeVector.get(j).startPoint = sortedvecter.get(i).startPoint;
                 }
             }   
-        }
-    
-       
+        }          
     }
 
     public static void main(String[] args) {
